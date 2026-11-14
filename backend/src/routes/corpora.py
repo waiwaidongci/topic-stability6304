@@ -11,7 +11,7 @@ def index(db:Session=Depends(get_db),user=Depends(current_user)):return corpora.
 @router.post('/corpora',status_code=201)
 def create(data:CorpusInput,db:Session=Depends(get_db),user=Depends(writers)):return corpora.create_corpus(db,data,user)
 @router.get('/documents')
-def documents(db:Session=Depends(get_db),user=Depends(current_user)):return corpora.list_documents(db)
+def documents(db:Session=Depends(get_db),user=Depends(current_user)):return corpora.list_documents(db,include_withdrawn=True)
 @router.patch('/documents/{id}')
 def document(id:int,data:DocumentPatch,db:Session=Depends(get_db),user=Depends(writers)):return corpora.patch_document(db,id,data,user)
 @router.get('/whitelist')

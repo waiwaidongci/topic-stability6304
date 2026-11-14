@@ -1,5 +1,8 @@
 -- metadata initializes corpora, token_documents, topic_runs, topic_profiles,
--- editorial_notes and users/audit. Natural keys corpus.name,
--- (corpus_id,reference), (run_id,topic_index). TopicProfile.mean_similarity
--- uses MySQL DOUBLE; complete matrices/word weights are JSON doubles.
--- Plan production schema migrations explicitly.
+-- editorial_notes, document_withdrawals and users/audit. Natural keys
+-- corpus.name, (corpus_id,reference), (run_id,topic_index),
+-- document_withdrawals.document_id. TopicProfile.mean_similarity uses MySQL
+-- DOUBLE; complete matrices/word weights are JSON doubles.
+-- Withdrawals are append-only trace records: they keep reference/title,
+-- content sha256 and affected run/note ids, never the withdrawn tokens text.
+-- Plan production schema migrations explicitly for multi-instance deployments.

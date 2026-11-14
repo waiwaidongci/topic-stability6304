@@ -15,3 +15,5 @@ class EditorialNote(Base):
  review_note:Mapped[str]=mapped_column(String(500),default='')
  creator_id:Mapped[int]=mapped_column(ForeignKey('users.id'))
  created_at:Mapped[datetime]=mapped_column(DateTime,default=lambda:datetime.now(timezone.utc))
+ superseded_by_note_id:Mapped[int|None]=mapped_column(ForeignKey('editorial_notes.id'),nullable=True)
+ quarantine_reason:Mapped[str]=mapped_column(String(500),default='',server_default='')

@@ -5,3 +5,4 @@ from .document import TokenDocument
 from .run import TopicRun
 from .profile import TopicProfile
 from .note import EditorialNote
+from .withdrawal import DocumentWithdrawal

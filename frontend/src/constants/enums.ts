@@ -1,1 +1,1 @@
-export const ROLES={admin:'编辑研究负责人',analyst:'主题研究编辑',viewer:'展签观察员'};export const RUN_STATUS={queued:'等待分解',running:'分解中',succeeded:'已成册',failed:'失败'};export const NOTE_STATUS={draft:'待审阅',approved:'已确认',rejected:'已退回'};
+export const ROLES={admin:'编辑研究负责人',analyst:'主题研究编辑',viewer:'展签观察员'};export const RUN_STATUS={queued:'等待分解',running:'分解中',succeeded:'已成册',failed:'失败',invalidated:'已隔离'};export const NOTE_STATUS={draft:'待审阅',approved:'已确认',rejected:'已退回'};export const RUN_VALIDITY={valid:'有效',contaminated:'受撤回污染'};

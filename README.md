@@ -34,6 +34,16 @@ docker compose exec -T backend python -m scripts.seed_demo
 8. 负责人 admin 阅读后确认或退回。viewer 只能下载已确认说明 CSV。后续修改实时主题名不会改写已经审阅的快照。
 9. 在“成册留痕”核对导入、任务、命名、说明、审批与导出审计；每个请求携带 X-Request-ID。
 
+## 展签撤回与隔离重算
+
+误收录的展签可在“分词语料”整篇撤回（`POST /documents/{id}/withdraw`，需 admin/analyst，body `{"reason":"…"}`）。撤回按引用记录而不是改写历史：
+
+- 原文与分词文本不再经 API 对外提供，文档修订接口返回 409；`document_withdrawals` 只保留 reference/title、原因、操作者、内容 SHA-256、词数、语料修订号和受影响的运行/说明编号，不含原文。
+- 正式撤回会提升 `corpora.revision`。所有仍有效且建立于旧修订的运行（`succeeded`/`queued`/`running`）立即置为 `invalidated`，`validity=contaminated`；其词权、idf、代表文档激活从 `/runs`、`/topics` 隐藏，`/runs/{id}` 只返回冻结指纹与隔离标记，磁盘结果文件删除。
+- 每个受影响运行生成一个 `supersedes_run_id` 指向旧版的替代运行，按原参数在新修订语料上重算。替代版是新的独立研究：不复制旧主题名和说明，必须重新人工命名、建立说明并由 admin 审阅后，CSV 才可下载（`exportable`）。受污染说明的旧词权快照同样从接口剥离，导出返回 410。
+- 撤回与计算并发时，worker 在开始与提交前都以行锁重新读取运行状态和 `corpora.revision`；晚到结果发现运行已隔离或修订已变化时直接丢弃，不恢复 `succeeded`。重复撤回幂等，返回原记录与替代编号，不重复重算；重算失败保持 `failed`，受污染旧版继续隔离。影响范围仅限同一 `corpus_id`，其他语料运行不受影响。
+- 页面以“受污染旧版 / 重算替代版”徽标和横幅区分两种运行；旧版入口只展示隔离记录，替代版入口展示重算结果并提示重新审阅。
+
 ## 数值口径
 
 - 分词仅使用 `str.split()` 空白切分，严格匹配 `backend/src/constants/vocabulary.py` 的 50 词白名单。没有自动中文分词或词义扩展。词汇从所选语料按 min_df 筛选并排序；保存词汇、df、IDF 和全部参数。
@@ -47,7 +57,7 @@ docker compose exec -T backend python -m scripts.seed_demo
 
 ## 结构
 
-75 个有职责的 Python/TypeScript/Vue/CSS 源文件（不含空包、依赖和编译产物）。六个业务页面为研究首页、分词语料、主题配置、词权与稳定、编辑审阅、成册留痕。五个业务实体 Corpus → TokenDocument → TopicRun → TopicProfile → EditorialNote，另有 User/AuditLog。路由、schema、服务、ORM、前端 API/store 和页面形成完整链路。
+75 个有职责的 Python/TypeScript/Vue/CSS 源文件（不含空包、依赖和编译产物）。六个业务页面为研究首页、分词语料、主题配置、词权与稳定、编辑审阅、成册留痕。五个业务实体 Corpus → TokenDocument → TopicRun → TopicProfile → EditorialNote，外加撤回追溯 DocumentWithdrawal 与 User/AuditLog。路由、schema、服务、ORM、前端 API/store 和页面形成完整链路。
 
 后端枚举位于 `src/constants/enums.py`，前端对应 `src/constants/enums.ts`。RequestID 与 Error 两个中间件统一请求追踪和错误边界。TopicTerms、RunSummary、RunTable、AlignmentGrid 和 common 组件复用真实接口数据。Celery 的结果持久化后由前端轮询刷新。审阅前冻结主题快照以保持批准结果的可复查性。
 

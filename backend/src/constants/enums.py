@@ -8,6 +8,10 @@ class RunStatus(StrEnum):
  RUNNING='running'
  SUCCEEDED='succeeded'
  FAILED='failed'
+ INVALIDATED='invalidated'
+class RunValidity(StrEnum):
+ VALID='valid'
+ CONTAMINATED='contaminated'
 class NoteStatus(StrEnum):
  DRAFT='draft'
  APPROVED='approved'

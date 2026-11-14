@@ -1,0 +1,15 @@
+-- Additive changes for document-level withdrawal and recomputation fencing.
+-- Applied at startup by src/config/database.py:ensure_columns() for existing
+-- volumes; fresh databases get the same columns from SQLAlchemy metadata.
+--   corpora.revision              INTEGER NOT NULL DEFAULT 0
+--   topic_runs.corpus_revision    INTEGER NOT NULL DEFAULT 0
+--   topic_runs.validity           VARCHAR(20) NOT NULL DEFAULT 'valid'
+--   topic_runs.supersedes_run_id  INTEGER NULL
+--   topic_runs.invalidated_at     DATETIME NULL
+--   topic_runs.invalidation_reason VARCHAR(500) NOT NULL DEFAULT ''
+--   editorial_notes.superseded_by_note_id INTEGER NULL
+--   editorial_notes.quarantine_reason     VARCHAR(500) NOT NULL DEFAULT ''
+-- New table document_withdrawals is append-only: reference/title, reason,
+-- actor, content sha256, token count, corpus revision and affected run/note
+-- ids. It never stores the withdrawn tokens text. Plan a real migration
+-- runner before multi-instance production deployment.
